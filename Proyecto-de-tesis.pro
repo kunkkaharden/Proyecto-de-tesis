@@ -33,4 +33,5 @@ HEADERS += \
     source/auxiliar/estado.h \
     aprendizajereforzado.h \
     source/modelo/aprendizajereforzado.h \
-    source/utiles/recursos.h
+    source/utiles/recursos.h \
+    source/auxiliar/ar.h

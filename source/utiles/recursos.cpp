@@ -1,6 +1,7 @@
 #include "recursos.h"
 #include<fstream>
-#include<arreglofloat.h>
+//#include<arreglofloat.h>
+#include<source/utiles/arreglofloat.h>
 
 Recursos::Recursos()
 {
@@ -75,7 +76,7 @@ Matrix *Recursos::getMatrix(string url)
  * 1 para todos los posibles estados
  * 2 para la meta
  */
-Matrix *Recursos::crearEntorno(int n)
+ Matrix *Recursos::crearEntorno(int n)
 {
     Matrix * r = new Matrix(1,n,n);
     r->num(2,n-1,n-1);
@@ -88,9 +89,11 @@ Matrix *Recursos::crearEntorno(int n)
  * -1 para los estados no terminale
  *  1 para el estado terminal
  */
+
 Matrix *Recursos::crearRecompensas(int n)
 { Matrix * r = new Matrix(-1,n,n);
     r->num(1,n-1,n-1);
     return r;
 
 }
+

@@ -6,10 +6,30 @@
  * @return
  *
  */
+Matrix *Entorno::getEntorno() const
+{
+    return entorno;
+}
+
+void Entorno::setEntorno(Matrix *value)
+{
+    entorno = value;
+}
+
+Matrix *Entorno::getRecompensa() const
+{
+    return recompensa;
+}
+
+void Entorno::setRecompensa(Matrix *value)
+{
+    recompensa = value;
+}
+
 Entorno::Entorno(Matrix *en, Matrix *re): entorno(en), recompensa(re)
 {
     hacerMapa();
-
+    
 }
 
 EstadoRecompensa *Entorno::accion(int accion, int est)

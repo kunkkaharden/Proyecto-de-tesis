@@ -31,6 +31,10 @@ public:
     void mostrar(int accion, Cordenadas *estado);
     bool posible(int s);
     void mostrar(int accion, int estado);
+    Matrix *getEntorno() const;
+    void setEntorno(Matrix *value);
+    Matrix *getRecompensa() const;
+    void setRecompensa(Matrix *value);
 };
 
 #endif // ENTORNO_H

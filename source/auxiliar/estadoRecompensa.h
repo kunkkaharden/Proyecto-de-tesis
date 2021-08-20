@@ -1,6 +1,7 @@
 #ifndef ESTADORECOMPENSA_H
 #define ESTADORECOMPENSA_H
-#include<source/auxiliar/estado.h>">
+#include<source/auxiliar/estado.h>
+
 
 class EstadoRecompensa
 {

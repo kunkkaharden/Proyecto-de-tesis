@@ -1,4 +1,5 @@
 #include "agente.h"
+#include<source/auxiliar/ar.h>
 
 Matrix *Agente::getQValues() const
 {
@@ -62,6 +63,11 @@ float Agente::floatRandom()
     float num = 0 +( a/10) + (b / 100) ;
     return num;
 
+
+  /*  float a = 1+ rand() %9;
+    float b = 1 + rand() % 9 ;
+    float num = 0 +( a/10) + (b / 100) ;
+    return num;*/
 }
 /**
  * @brief Agente::accionRamdon
@@ -83,13 +89,13 @@ int Agente::accionRamdon(Matrix *qValues)
 int Agente::politica(int estado, Matrix *qValues)
 {
     int accion = -1;
-       float ramdon = floatRandom();
-       if(ramdon < e){
-           accion = accionRamdon(qValues);
-       }else{
-           accion = mejorAccion(estado, qValues);
-       }
-       return accion;
+    float ramdon = floatRandom();
+    if(ramdon < e){
+        accion = accionRamdon(qValues);
+    }else{
+        accion = mejorAccion(estado, qValues);
+    }
+    return accion;
 }
 /**
  * @brief Agente::mejorAccion
@@ -102,33 +108,33 @@ int Agente::politica(int estado, Matrix *qValues)
 int Agente::mejorAccion(int estado, Matrix *qValues)
 {
     float valor = qValues->num(estado, 0) ;
-       float temporal;
-       int accion = 0 ;
-       int cantI = 1; // cantidad de valores iguales
-       for(int i =1; i < qValues->columnas(); i++){
-           temporal = qValues->num(estado, i) ;
-           if(temporal > valor){
-               valor = temporal;
-               accion = i;
+    float temporal;
+    int accion = 0 ;
+    int cantI = 1; // cantidad de valores iguales
+    for(int i =1; i < qValues->columnas(); i++){
+        temporal = qValues->num(estado, i) ;
+        if(temporal > valor){
+            valor = temporal;
+            accion = i;
 
-           }else  if(temporal == valor){
-               cantI++;
-           }
-       }
+        }else  if(temporal == valor){
+            cantI++;
+        }
+    }
 
-       if(cantI == qValues->columnas()){
-           accion = accionRamdon(qValues);
+    if(cantI == qValues->columnas()){
+        accion = accionRamdon(qValues);
 
-       }
+    }
 
-       return accion  ;
+    return accion  ;
 }
 
 void Agente::disminuirE()
 {
-    if(e > 0.10){
-           e -= 0.01;
-       }
+    if(e > 0.01){
+        e -= 0.01;
+    }
 }
 /**
  * @brief Agente::mezcla
@@ -173,8 +179,8 @@ Agente *Agente::mezcla(Agente *a)
  */
 int Agente::getEstadoInicial(int rank,int size, Matrix * qValues)
 {
-     int muestra = qValues->filas() / size;
-     int inicio = rank * muestra;
+    int muestra = qValues->filas() / size;
+    int inicio = rank * muestra;
 
     return inicio + rand() % muestra;
 
@@ -216,6 +222,136 @@ Agente::Agente(Matrix *q, Matrix *e)
 
 Agente::Agente(Matrix *q)
 {
-     this->qValues = q;
-     this->experiencia = new Matrix(0,q->filas(),q->columnas());
+    this->qValues = q;
+    this->experiencia = new Matrix(0,q->filas(),q->columnas());
+}
+void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
+{
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    bool bandera = true; //para el fin de episodio
+    //**************
+    while(bandera){
+        (*pasos)++;
+
+        ac = politica(s,qValues);
+        delete est;
+        est = entorno->accion(ac,s);
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+
+
+#pragma omp critical
+        qValues->num(qValues->num(s,ac) +
+                     a *
+                     (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                      - qValues->num(s,ac) ),s,ac) ;
+
+        s = sp;
+        /*if(rank == 0){
+            entorno->mostrar(ac,s);
+            cout<<"rank: "<<rank<<endl;
+            system("pause");
+
+        }*/
+        if(est->getEstado()->isTerminal() == true ){
+            bandera = false;
+            disminuirE();
+            //   cout<<"encontro meta"<<endl;
+            //  agente->getValues()->mostrar();
+            //   system("pause");
+        }
+        if((*pasos) > 500000){
+            bandera = false;
+
+
+            //   cout<<"Demaciados pasos  >2000"<<endl;
+        }
+
+    }
+
+}
+
+void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
+{
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    int acp;  // accion siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    ac = politica(s,qValues);
+    bool bandera = true; //para el fin de episodio
+    while(bandera){
+        (*pasos)++;
+
+        delete est;
+        est = entorno->accion(ac,s); //informacion del estado siguiente
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        if(!est->getEstado()->isTerminal()){
+            acp =  politica(sp,qValues);
+            //#pragma omp critical
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,acp)
+                          - qValues->num(s,ac) ),s,ac) ;
+
+
+        }else{
+            //#pragma omp critical
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r  - qValues->num(s,ac) ),s,ac) ;
+
+
+        }
+
+        s = sp; ac = acp;
+        /*  if(rank == 0){
+            entorno->mostrar(ac,s);
+            system("pause");
+
+        }*/
+        if(est->getEstado()->isTerminal()){
+            bandera = false;
+            disminuirE();
+            //   cout<<"encontro meta"<<endl;
+            //  agente->getValues()->mostrar();
+            //   system("pause");
+        }
+        if((*pasos) > 500000){
+            bandera = false;
+
+
+            //   cout<<"Demaciados pasos  >2000"<<endl;
+        }
+
+    }
+
+}
+//void AgentePa::entrenarRL(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno)
+
+void Agente::entrenarETComun(Algoritmo alg ,int rank, int size, int it, Matrix *qValues, Entorno *entorno)
+{
+    int s = 0; // estado inicial
+    int pasos =0;  // cantidad de pasos
+    for(int i =0; i < it ; i++){
+        pasos =0;
+        if (rank !=0){
+            s = getEstadoInicial(rank,size,qValues);
+        }
+        if(alg == SARSA_Learning){
+            qLearning(s,&pasos,qValues,entorno);
+        }else if(alg == Q_Learning){
+            sarsaLearning(s,&pasos,qValues,entorno);
+        }
+
+        if(rank == 0)
+            cout<<"pasos: "<<pasos<<" por "<<rank<<endl;
+
+    }
 }
