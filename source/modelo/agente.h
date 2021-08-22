@@ -6,8 +6,10 @@
 #include<omp.h>
 class Agente
 {
-    //Declaración para reduccion
-#pragma omp declare reduction(mezcla: Agente *: omp_out = omp_out->mezcla(omp_in)) initializer(omp_priv=new Agente(omp_orig))
+    /**
+     * Declaración para reduccion
+     */
+//#pragma omp declare reduction(mezcla: Agente *: omp_out = omp_out->mezcla(omp_in)) initializer(omp_priv=new Agente(omp_orig))
 
 private:
     Matrix *qValues;
@@ -37,11 +39,12 @@ public:
     int politica(int estado, Matrix * qValues);
     int  mejorAccion(int estado, Matrix * qValues);
     void disminuirE();
+    void resetExp();
     Agente *mezcla(Agente *a);
    int getEstadoInicial(int rank, int size, Matrix *qValues); 
-   void qLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno);
-   void sarsaLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno);
-   void entrenarETComun(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno);
+   void qLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno, bool ec);
+   void sarsaLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno, bool ec);
+   void entrenar(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno, bool ec);
 };
 
 #endif // AGENTE_H

@@ -64,7 +64,7 @@ float Agente::floatRandom()
     return num;
 
 
-  /*  float a = 1+ rand() %9;
+    /*  float a = 1+ rand() %9;
     float b = 1 + rand() % 9 ;
     float num = 0 +( a/10) + (b / 100) ;
     return num;*/
@@ -137,6 +137,15 @@ void Agente::disminuirE()
     }
 }
 /**
+ * @brief Agente::resetExp
+ * Vuelve  poner la matrix de experiencias en estado inicial
+ */
+void Agente::resetExp()
+{
+    delete this->experiencia;
+    this->experiencia = new Matrix(0,this->qValues->filas(),this->qValues->columnas());
+}
+/**
  * @brief Agente::mezcla
  * @param a
  * @return Agente*
@@ -145,6 +154,7 @@ void Agente::disminuirE()
  */
 Agente *Agente::mezcla(Agente *a)
 {
+    system("pause");
     float qTemp1, qTemp2;//qvalues temporales
     float eTemp1, eTemp2;//experincias temporales
 
@@ -168,7 +178,10 @@ Agente *Agente::mezcla(Agente *a)
             }
         }
     }
-    return new Agente(q,e);
+    Agente * r = new Agente(q,e);
+    //Se hereda el menor de los 2 valores
+   this->getE() < a->getE() ? r->setE(this->getE()) : r->setE(a->getE());
+    return r;
 }
 /**
  * @brief Agente::getEstadoInicial
@@ -225,7 +238,15 @@ Agente::Agente(Matrix *q)
     this->qValues = q;
     this->experiencia = new Matrix(0,q->filas(),q->columnas());
 }
-void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
+/**
+ * @brief Agente::qLearning
+ * @param s
+ * @param pasos
+ * @param qValues
+ * @param entorno
+ * @param ec si se está usando el enfoque de tabla central
+ */
+void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool ec)
 {
     float r;   // recompensa
     int ac;    // accion
@@ -244,12 +265,16 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
         r = est->getRecompensa();
 
 
-#pragma omp critical
-        qValues->num(qValues->num(s,ac) +
-                     a *
-                     (r + y * qValues->num(sp,mejorAccion(sp,qValues))
-                      - qValues->num(s,ac) ),s,ac) ;
-
+//#pragma omp critical
+      //  {
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                          - qValues->num(s,ac) ),s,ac) ;
+     //   }
+        if(ec){
+            experiencia->num( experiencia->num(s,ac) + 1,s,ac);
+        }
         s = sp;
         /*if(rank == 0){
             entorno->mostrar(ac,s);
@@ -275,7 +300,7 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
 
 }
 
-void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
+void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, bool ec)
 {
     float r;   // recompensa
     int ac;    // accion
@@ -302,14 +327,17 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
 
 
         }else{
-            //#pragma omp critical
+      //   #pragma omp critical
             qValues->num(qValues->num(s,ac) +
                          a *
                          (r  - qValues->num(s,ac) ),s,ac) ;
 
 
         }
+        if(ec){
 
+            experiencia->num( experiencia->num(s,ac) + 1,s,ac);
+        }
         s = sp; ac = acp;
         /*  if(rank == 0){
             entorno->mostrar(ac,s);
@@ -333,9 +361,9 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno)
     }
 
 }
-//void AgentePa::entrenarRL(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno)
 
-void Agente::entrenarETComun(Algoritmo alg ,int rank, int size, int it, Matrix *qValues, Entorno *entorno)
+
+void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues, Entorno *entorno,bool ec)
 {
     int s = 0; // estado inicial
     int pasos =0;  // cantidad de pasos
@@ -345,9 +373,9 @@ void Agente::entrenarETComun(Algoritmo alg ,int rank, int size, int it, Matrix *
             s = getEstadoInicial(rank,size,qValues);
         }
         if(alg == SARSA_Learning){
-            qLearning(s,&pasos,qValues,entorno);
+           sarsaLearning(s,&pasos,qValues,entorno,ec);
         }else if(alg == Q_Learning){
-            sarsaLearning(s,&pasos,qValues,entorno);
+           qLearning(s,&pasos,qValues,entorno,ec);
         }
 
         if(rank == 0)

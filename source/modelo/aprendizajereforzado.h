@@ -17,6 +17,7 @@ public:
     Matrix * crearQvalues();
     void entrenarETComun(Algoritmo alg, int it);
     void entrenarETCentral(Algoritmo alg, int it);
+
 };
 
 #endif // APRENDIZAJEREFORZADO_H
