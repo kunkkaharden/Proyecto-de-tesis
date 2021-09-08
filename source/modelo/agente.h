@@ -4,6 +4,7 @@
 #include<source/modelo/entorno.h>
 #include<source/auxiliar/ar.h>
 #include<omp.h>
+#include<source/utiles/metricas.h>
 class Agente
 {
     /**
@@ -13,8 +14,9 @@ class Agente
 
 private:
     Matrix *qValues;
+     Metricas * m ;
     Matrix *experiencia; //Número de veces que fue cambiado cada valor
-  float e = 0.1; //[0-1] para ver la probabilidad de escoger una accion aleatoria
+  float e = 0.50; //[0-1] para ver la probabilidad de escoger una accion aleatoria
     float a = 0.99;    //[0-1] factor de aprendizaje  0: no se aprende 1: se olvida lo
     //aprendido anteriormente solo se tiene en cuenta la ultima experiencia
     float y = 0.99;    //[0-1] factor de descuento    0: corto plazo  1: largo plazo
@@ -45,6 +47,8 @@ public:
    void qLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno, bool ec);
    void sarsaLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno, bool ec);
    void entrenar(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno, bool ec);
+   Metricas *getM() const;
+   void setM(Metricas *value);
 };
 
 #endif // AGENTE_H

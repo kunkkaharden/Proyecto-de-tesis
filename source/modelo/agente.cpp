@@ -1,6 +1,6 @@
 #include "agente.h"
 #include<source/auxiliar/ar.h>
-
+#include<source/utiles/metricas.h>
 Matrix *Agente::getQValues() const
 {
     return qValues;
@@ -154,7 +154,7 @@ void Agente::resetExp()
  */
 Agente *Agente::mezcla(Agente *a)
 {
-    system("pause");
+  //  system("pause");
     float qTemp1, qTemp2;//qvalues temporales
     float eTemp1, eTemp2;//experincias temporales
 
@@ -178,9 +178,11 @@ Agente *Agente::mezcla(Agente *a)
             }
         }
     }
+
     Agente * r = new Agente(q,e);
     //Se hereda el menor de los 2 valores
    this->getE() < a->getE() ? r->setE(this->getE()) : r->setE(a->getE());
+    this->getM()->length() > a->getM()->length() ? r->setM(this->getM()) : r->setM(a->getM());
     return r;
 }
 /**
@@ -202,8 +204,18 @@ int Agente::getEstadoInicial(int rank,int size, Matrix * qValues)
  * @brief Agente::Agente
  * Constructor en el caso de tabla Q externa
  */
-Agente::Agente()
+Metricas *Agente::getM() const
 {
+    return m;
+}
+
+void Agente::setM(Metricas *value)
+{
+    m = value;
+}
+
+Agente::Agente()
+{   m = new Metricas();
     qValues = NULL;
     experiencia = NULL;
 
@@ -215,6 +227,7 @@ Agente::Agente()
  */
 Agente::Agente(Agente *a)
 {
+    this->m = a->getM();
     this->qValues = new Matrix(a ->qValues);
     this->experiencia =new Matrix(a ->experiencia);
     this->e = a->e;
@@ -227,14 +240,14 @@ Agente::Agente(Agente *a)
  * Constructor a partir de la tabla Q y las experienias
  */
 Agente::Agente(Matrix *q, Matrix *e)
-{
+{   m = new Metricas();
     this->qValues = q;
     this->experiencia =e;
 
 }
 
 Agente::Agente(Matrix *q)
-{
+{   m = new Metricas();
     this->qValues = q;
     this->experiencia = new Matrix(0,q->filas(),q->columnas());
 }
@@ -248,6 +261,9 @@ Agente::Agente(Matrix *q)
  */
 void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool ec)
 {
+
+
+
     float r;   // recompensa
     int ac;    // accion
     int sp;   //estado siguiente
@@ -263,7 +279,9 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
 
         sp = est->getEstado()->getIndex();
         r = est->getRecompensa();
-
+       if( omp_get_thread_num() == 0){
+           m->guardarRecompensa(r);
+       }
 
 //#pragma omp critical
       //  {
@@ -285,6 +303,10 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
         if(est->getEstado()->isTerminal() == true ){
             bandera = false;
             disminuirE();
+            if( omp_get_thread_num() == 0){
+                 m->finalizarEpisodio();
+            }
+
             //   cout<<"encontro meta"<<endl;
             //  agente->getValues()->mostrar();
             //   system("pause");
@@ -302,6 +324,7 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
 
 void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, bool ec)
 {
+
     float r;   // recompensa
     int ac;    // accion
     int sp;   //estado siguiente
@@ -378,8 +401,8 @@ void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues
            qLearning(s,&pasos,qValues,entorno,ec);
         }
 
-        if(rank == 0)
-            cout<<"pasos: "<<pasos<<" por "<<rank<<endl;
+      //  if(rank == 0)
+        //    cout<<"pasos: "<<pasos<<" por "<<rank<<endl;
 
     }
 }

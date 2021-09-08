@@ -9,8 +9,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    AprendizajeReforzado * ar  = new AprendizajeReforzado(5);
-  //  ar->entrenarETComun(SARSA_Learning,10000);
-    ar->entrenarETCentral(Q_Learning,200);
+    AprendizajeReforzado * ar  = new AprendizajeReforzado(100);
+    ar->entrenarETComun(Q_Learning,100000);
+    // ar->entrenarETCentral(Q_Learning,100000);
     return a.exec();
 }
