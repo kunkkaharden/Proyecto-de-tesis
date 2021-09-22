@@ -53,12 +53,13 @@ void AprendizajeReforzado::entrenarETCentral(Algoritmo alg,  int it){
 }
 void AprendizajeReforzado::entrenarETComun(Algoritmo alg,  int it){
     initETComun();
-    int size , rank;
+    int size =1, rank=0;
 
 #pragma omp parallel private(rank)
-    {
+     {
         size = omp_get_num_threads();
         rank = omp_get_thread_num();
+
         Agente * a = new Agente();
         a->entrenar(alg,rank,size,it,qValues,entorno,false);
     }

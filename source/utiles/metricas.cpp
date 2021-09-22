@@ -17,12 +17,19 @@ void Metricas::guardarRecompensa(int recompensa)
 
 void Metricas::finalizarEpisodio()
 {
+
     historial->append( Episodio(acumulador,getTime()));
-    if (getPromedio() > humbral ){
+  //  int promedio = getPromedio() ;
+
+  //  cout<<"Promedio: "<<promedio<<" Humbral: "<<humbral<<"len: "<<historial->length();
+    if (  getPromedio() > humbral ){
+        cout<<"fin"<<endl;
         exportarCSV();
         system("pause");
+         exit(0);
     }
-    cout<<acumulador<<" r"<<endl;
+
+    cout<<'\n'<<acumulador<<" r"<<endl;
     acumulador =0;
 }
 
@@ -33,6 +40,7 @@ double Metricas::getTime()
 
 void Metricas::exportarCSV()
 {
+
     int id = historial->at(0).getTiempo();
     string nombre = "Historial-" + to_string(id)+".csv";
     ofstream f ;
@@ -48,13 +56,15 @@ void Metricas::exportarCSV()
         temp = to_string(i)  +","+ to_string(historial->at(i).getRecompensa())+","+ to_string(historial->at(i).getTiempo()) ;
 
         f<<temp<<endl;
+
     }
     temp = "tiemPo: ";
     temp += to_string(historial->at(historial->length() -1 ).getTiempo() - historial->at(0).getTiempo());
    f<<temp<<endl;
     f.close();
-    system("pause");
-    exit(0);
+    cout<<'\a';
+
+
 }
 
 int Metricas::length()

@@ -49,6 +49,8 @@ public:
    void entrenar(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno, bool ec);
    Metricas *getM() const;
    void setM(Metricas *value);
+   ~Agente();
+   void liberarRecursos();
 };
 
 #endif // AGENTE_H

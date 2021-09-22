@@ -1,6 +1,18 @@
 #include "agente.h"
 #include<source/auxiliar/ar.h>
 #include<source/utiles/metricas.h>
+Agente ::~Agente(){
+
+     liberarRecursos();
+
+
+}
+
+void Agente::liberarRecursos()
+{
+    delete qValues;
+    delete experiencia;
+}
 Matrix *Agente::getQValues() const
 {
     return qValues;
@@ -183,6 +195,8 @@ Agente *Agente::mezcla(Agente *a)
     //Se hereda el menor de los 2 valores
    this->getE() < a->getE() ? r->setE(this->getE()) : r->setE(a->getE());
     this->getM()->length() > a->getM()->length() ? r->setM(this->getM()) : r->setM(a->getM());
+     a->~Agente();
+     this->liberarRecursos();
     return r;
 }
 /**
@@ -340,6 +354,9 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
 
         sp = est->getEstado()->getIndex();
         r = est->getRecompensa();
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
+        }
         if(!est->getEstado()->isTerminal()){
             acp =  politica(sp,qValues);
             //#pragma omp critical
@@ -370,6 +387,9 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
         if(est->getEstado()->isTerminal()){
             bandera = false;
             disminuirE();
+            if( omp_get_thread_num() == 0){
+                 m->finalizarEpisodio();
+            }
             //   cout<<"encontro meta"<<endl;
             //  agente->getValues()->mostrar();
             //   system("pause");
@@ -391,6 +411,7 @@ void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues
     int s = 0; // estado inicial
     int pasos =0;  // cantidad de pasos
     for(int i =0; i < it ; i++){
+      //  cout<<'.';
         pasos =0;
         if (rank !=0){
             s = getEstadoInicial(rank,size,qValues);
