@@ -35,6 +35,7 @@ public:
     Matrix *productoVectorial(Matrix *mat);
     Matrix *resta(float num);
     Matrix *multiplicacionXescalar(float valor);
+   // Matrix(Matrix *x);
 private:
     float *matrix;
     int cantFilas =0;

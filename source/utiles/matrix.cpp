@@ -12,7 +12,7 @@ Matrix::~Matrix()
     cantFilas =0;
     delete[] matrix;
 }
-
+/*
 Matrix::Matrix(Matrix * x)
 {int i, j;
     cantFilas = x->filas();
@@ -26,7 +26,14 @@ Matrix::Matrix(Matrix * x)
             num(x->num (i,j) ,i,j);
         }
 }
+*/
 
+Matrix::Matrix( Matrix *x): cantFilas(x->filas()), cantColumnas( x->columnas())
+{
+    int size = cantFilas *  cantColumnas;
+     matrix = new float[size];
+     memcpy(matrix,x->getArreglo(),sizeof(float)*size);
+}
 Matrix::Matrix( float valor,int x, int y): cantFilas(x), cantColumnas(y)
 {
     matrix = new float[x*y];
@@ -447,7 +454,7 @@ Matrix* Matrix ::concatenar(Matrix *nmat, int lugar){
 float Matrix :: floatRandom(){
     
     float a = 1+ rand() %9;
-    // float b = 1 + rand() % 5 ;
-    float num = 0 +( a/10) ;//+ (b / 100) ;
+    float b = 1 + rand() % 9 ;
+    float num = 0 +( a/10) + (b / 100) ;
     return num;
 }

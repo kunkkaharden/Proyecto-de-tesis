@@ -39,6 +39,11 @@ void AprendizajeReforzado::entrenarETCentral(Algoritmo alg,  int it){
         iteraciones = frecuencia;
     }
     Agente * agTemp = new Agente(agente);
+  /*  cout<<"Q antes"<<endl;
+    agTemp->getQValues()->mostrar();
+    cout<<"E antes"<<endl;
+    agTemp->getExperiencia()->mostrar();
+    system("pause");*/
     for(int i =0; i<ciclos ; i++){
 #pragma omp parallel reduction(mezcla:agTemp) private(rank)
         {
@@ -46,7 +51,14 @@ void AprendizajeReforzado::entrenarETCentral(Algoritmo alg,  int it){
             rank = omp_get_thread_num();
             agTemp->entrenar(alg,rank,size,iteraciones,agTemp->getQValues(),entorno,true);
         }
-        agTemp->resetExp();
+
+      /*  cout<<"Q d a"<<endl;
+        agTemp->getQValues()->mostrar();
+        cout<<"E d a"<<endl;
+        agTemp->getExperiencia()->mostrar();
+        system("pause");*/
+        //agTemp->resetExp();
+
     }
     delete agente;
     agente = new Agente(agTemp);
@@ -55,12 +67,12 @@ void AprendizajeReforzado::entrenarETComun(Algoritmo alg,  int it){
     initETComun();
     int size =1, rank=0;
 
-#pragma omp parallel private(rank)
-     {
+//#pragma omp parallel private(rank)
+   // {
         size = omp_get_num_threads();
         rank = omp_get_thread_num();
 
         Agente * a = new Agente();
         a->entrenar(alg,rank,size,it,qValues,entorno,false);
-    }
+   // }
 }

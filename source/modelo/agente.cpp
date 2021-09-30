@@ -1,9 +1,10 @@
 #include "agente.h"
 #include<source/auxiliar/ar.h>
 #include<source/utiles/metricas.h>
+#include<time.h>
 Agente ::~Agente(){
 
-     liberarRecursos();
+    liberarRecursos();
 
 
 }
@@ -69,7 +70,7 @@ void Agente::setY(float value)
  */
 float Agente::floatRandom()
 {
-
+    //  srand(time(NULL));
     float a = 0+ rand() %10;
     float b = 0 + rand() % 10 ;
     float num = 0 +( a/10) + (b / 100) ;
@@ -89,6 +90,7 @@ float Agente::floatRandom()
  */
 int Agente::accionRamdon(Matrix *qValues)
 {
+    // srand(time(NULL));
     return   0+ rand() % qValues->columnas();
 }
 /**
@@ -155,7 +157,7 @@ void Agente::disminuirE()
 void Agente::resetExp()
 {
     delete this->experiencia;
-    this->experiencia = new Matrix(0,this->qValues->filas(),this->qValues->columnas());
+    this->experiencia = new Matrix(1,this->qValues->filas(),this->qValues->columnas());
 }
 /**
  * @brief Agente::mezcla
@@ -166,19 +168,23 @@ void Agente::resetExp()
  */
 Agente *Agente::mezcla(Agente *a)
 {
-  //  system("pause");
+    ;
     float qTemp1, qTemp2;//qvalues temporales
     float eTemp1, eTemp2;//experincias temporales
 
-    Matrix * q = new Matrix(0,a->getQValues()->filas(), a->getQValues()->columnas());
-    Matrix * e = new Matrix(0,a->getQValues()->filas(), a->getQValues()->columnas());
-    for (int i = 0 ; i< a->getQValues()->filas(); i++){
-        for (int j = 0 ; j< a->getQValues()->columnas(); j++){
+    // Matrix * q = new Matrix(0,a->getQValues()->filas(), a->getQValues()->columnas());
+    // Matrix * e = new Matrix(0,a->getQValues()->filas(), a->getQValues()->columnas());
+    int i =0;
+    int j =0;
+#pragma omp parallel for private(j)
+    for (i=0; i< a->getQValues()->filas(); i++){
+        for (j=0; j< a->getQValues()->columnas(); j++){
             eTemp1 = this->getExperiencia()->num(i,j);
             eTemp2 =  a->getExperiencia()->num(i,j);
             qTemp1 = this->getQValues()->num(i,j);
             qTemp2 = a->getQValues()->num(i,j);
-            if ( eTemp1 == eTemp2){
+            /*
+              if ( eTemp1 == eTemp2){
                 q->num((qTemp1+qTemp2)/2,i,j);
                 e->num(eTemp1,i,j);
             }else if ( eTemp1 > eTemp2){
@@ -187,17 +193,44 @@ Agente *Agente::mezcla(Agente *a)
             }else{
                 q->num(qTemp2,i,j);
                 e->num(eTemp2,i,j);
+            }*/
+
+            //  q->num(((qTemp1*eTemp1)+(qTemp2*eTemp2))/(eTemp1 + eTemp2),i,j);
+            // eTemp1 > eTemp2 ?  q->num(qTemp1,i,j) : q->num(qTemp2,i,j);
+            if ( eTemp1 == eTemp2){
+                this->qValues->num((qTemp1+qTemp2)/2,i,j);
+
+            }else if ( eTemp1 < eTemp2){
+                this->qValues->num(qTemp2,i,j);
+                this->experiencia->num(eTemp2,i,j);
             }
         }
     }
 
-    Agente * r = new Agente(q,e);
+    //  Agente * r = new Agente(q,e);
     //Se hereda el menor de los 2 valores
-   this->getE() < a->getE() ? r->setE(this->getE()) : r->setE(a->getE());
-    this->getM()->length() > a->getM()->length() ? r->setM(this->getM()) : r->setM(a->getM());
-     a->~Agente();
-     this->liberarRecursos();
-    return r;
+    this->getE() < a->getE() ? this->setE(this->getE()) : this->setE(a->getE());
+    this->getM()->length() > a->getM()->length() ? this->setM(this->getM()) : this->setM(a->getM());
+    /*   cout<<"Q mezcla this"<<endl;
+    this->getQValues()->mostrar();
+    cout<<"E mezcla this"<<endl;
+    this->getExperiencia()->mostrar();
+    system("pause");
+
+    cout<<"Q mezcla a"<<endl;
+    a->getQValues()->mostrar();
+    cout<<"E mezcla a"<<endl;
+    a->getExperiencia()->mostrar();
+    system("pause");
+
+    cout<<"Q mezcla r"<<endl;
+    r->getQValues()->mostrar();
+    cout<<"E mezcla r"<<endl;
+    r->getExperiencia()->mostrar();
+    system("pause");*/
+    delete a;
+    // this->liberarRecursos();
+    return this;
 }
 /**
  * @brief Agente::getEstadoInicial
@@ -263,7 +296,7 @@ Agente::Agente(Matrix *q, Matrix *e)
 Agente::Agente(Matrix *q)
 {   m = new Metricas();
     this->qValues = q;
-    this->experiencia = new Matrix(0,q->filas(),q->columnas());
+    this->experiencia = new Matrix(1,q->filas(),q->columnas());
 }
 /**
  * @brief Agente::qLearning
@@ -293,17 +326,17 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
 
         sp = est->getEstado()->getIndex();
         r = est->getRecompensa();
-       if( omp_get_thread_num() == 0){
-           m->guardarRecompensa(r);
-       }
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
+        }
 
-//#pragma omp critical
-      //  {
-            qValues->num(qValues->num(s,ac) +
-                         a *
-                         (r + y * qValues->num(sp,mejorAccion(sp,qValues))
-                          - qValues->num(s,ac) ),s,ac) ;
-     //   }
+        //#pragma omp critical
+        //  {
+        qValues->num(qValues->num(s,ac) +
+                     a *
+                     (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                      - qValues->num(s,ac) ),s,ac) ;
+        //   }
         if(ec){
             experiencia->num( experiencia->num(s,ac) + 1,s,ac);
         }
@@ -318,7 +351,7 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){
-                 m->finalizarEpisodio();
+                m->finalizarEpisodio();
             }
 
             //   cout<<"encontro meta"<<endl;
@@ -367,7 +400,7 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
 
 
         }else{
-      //   #pragma omp critical
+            //   #pragma omp critical
             qValues->num(qValues->num(s,ac) +
                          a *
                          (r  - qValues->num(s,ac) ),s,ac) ;
@@ -388,7 +421,7 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){
-                 m->finalizarEpisodio();
+                m->finalizarEpisodio();
             }
             //   cout<<"encontro meta"<<endl;
             //  agente->getValues()->mostrar();
@@ -408,21 +441,22 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
 
 void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues, Entorno *entorno,bool ec)
 {
+    srand(time(NULL));
     int s = 0; // estado inicial
     int pasos =0;  // cantidad de pasos
     for(int i =0; i < it ; i++){
-      //  cout<<'.';
+        //  cout<<'.';
         pasos =0;
         if (rank !=0){
             s = getEstadoInicial(rank,size,qValues);
         }
         if(alg == SARSA_Learning){
-           sarsaLearning(s,&pasos,qValues,entorno,ec);
+            sarsaLearning(s,&pasos,qValues,entorno,ec);
         }else if(alg == Q_Learning){
-           qLearning(s,&pasos,qValues,entorno,ec);
+            qLearning(s,&pasos,qValues,entorno,ec);
         }
 
-      //  if(rank == 0)
+        //  if(rank == 0)
         //    cout<<"pasos: "<<pasos<<" por "<<rank<<endl;
 
     }
