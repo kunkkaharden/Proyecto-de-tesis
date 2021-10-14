@@ -9,7 +9,7 @@ private:
     Matrix * qValues;
     Entorno * entorno;
     Agente * agente;
-    const int frecuencia = 2000;
+    const int frecuencia = 1000;
 public:
     AprendizajeReforzado(int dimension);
     void initETComun();

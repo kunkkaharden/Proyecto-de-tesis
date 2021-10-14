@@ -71,10 +71,10 @@ void Agente::setY(float value)
 float Agente::floatRandom()
 {
     //  srand(time(NULL));
-    float a = 0+ rand() %10;
-    float b = 0 + rand() % 10 ;
-    float num = 0 +( a/10) + (b / 100) ;
-    return num;
+    float a = 0+ rand() %99;
+    //  float b = 0 + rand() % 10 ;
+    //  float num = 0 +( a/10) + (b / 100) ;
+    return a/100;
 
 
     /*  float a = 1+ rand() %9;
@@ -90,7 +90,7 @@ float Agente::floatRandom()
  */
 int Agente::accionRamdon(Matrix *qValues)
 {
-    // srand(time(NULL));
+
     return   0+ rand() % qValues->columnas();
 }
 /**
@@ -104,6 +104,7 @@ int Agente::politica(int estado, Matrix *qValues)
 {
     int accion = -1;
     float ramdon = floatRandom();
+
     if(ramdon < e){
         accion = accionRamdon(qValues);
     }else{
@@ -146,9 +147,10 @@ int Agente::mejorAccion(int estado, Matrix *qValues)
 
 void Agente::disminuirE()
 {
-    if(e > 0.01){
+    if(e > 0.02){
         e -= 0.01;
     }
+
 }
 /**
  * @brief Agente::resetExp
@@ -172,8 +174,13 @@ Agente *Agente::mezcla(Agente *a)
     float qTemp1, qTemp2;//qvalues temporales
     float eTemp1, eTemp2;//experincias temporales
 
-    // Matrix * q = new Matrix(0,a->getQValues()->filas(), a->getQValues()->columnas());
-    // Matrix * e = new Matrix(0,a->getQValues()->filas(), a->getQValues()->columnas());
+    /* cout<<"Q mezcla this"<<endl;
+  this->getQValues()->mostrar();
+  cout<<"E mezcla this"<<endl;
+  this->getExperiencia()->mostrar();
+  system("pause");
+  system("cls");*/
+
     int i =0;
     int j =0;
 #pragma omp parallel for private(j)
@@ -183,20 +190,7 @@ Agente *Agente::mezcla(Agente *a)
             eTemp2 =  a->getExperiencia()->num(i,j);
             qTemp1 = this->getQValues()->num(i,j);
             qTemp2 = a->getQValues()->num(i,j);
-            /*
-              if ( eTemp1 == eTemp2){
-                q->num((qTemp1+qTemp2)/2,i,j);
-                e->num(eTemp1,i,j);
-            }else if ( eTemp1 > eTemp2){
-                q->num(qTemp1,i,j);
-                e->num(eTemp1,i,j);
-            }else{
-                q->num(qTemp2,i,j);
-                e->num(eTemp2,i,j);
-            }*/
 
-            //  q->num(((qTemp1*eTemp1)+(qTemp2*eTemp2))/(eTemp1 + eTemp2),i,j);
-            // eTemp1 > eTemp2 ?  q->num(qTemp1,i,j) : q->num(qTemp2,i,j);
             if ( eTemp1 == eTemp2){
                 this->qValues->num((qTemp1+qTemp2)/2,i,j);
 
@@ -204,30 +198,31 @@ Agente *Agente::mezcla(Agente *a)
                 this->qValues->num(qTemp2,i,j);
                 this->experiencia->num(eTemp2,i,j);
             }
+            //  q->num(((qTemp1*eTemp1)+(qTemp2*eTemp2))/(eTemp1 + eTemp2),i,j);
+            // eTemp1 > eTemp2 ?  q->num(qTemp1,i,j) : q->num(qTemp2,i,j);
         }
     }
 
-    //  Agente * r = new Agente(q,e);
+
     //Se hereda el menor de los 2 valores
     this->getE() < a->getE() ? this->setE(this->getE()) : this->setE(a->getE());
     this->getM()->length() > a->getM()->length() ? this->setM(this->getM()) : this->setM(a->getM());
-    /*   cout<<"Q mezcla this"<<endl;
-    this->getQValues()->mostrar();
-    cout<<"E mezcla this"<<endl;
-    this->getExperiencia()->mostrar();
-    system("pause");
 
+    /*
     cout<<"Q mezcla a"<<endl;
     a->getQValues()->mostrar();
     cout<<"E mezcla a"<<endl;
     a->getExperiencia()->mostrar();
     system("pause");
+    system("cls");
 
     cout<<"Q mezcla r"<<endl;
-    r->getQValues()->mostrar();
+    this->getQValues()->mostrar();
     cout<<"E mezcla r"<<endl;
-    r->getExperiencia()->mostrar();
-    system("pause");*/
+    this->getExperiencia()->mostrar();
+    system("pause");
+    system("cls");
+    */
     delete a;
     // this->liberarRecursos();
     return this;
@@ -241,10 +236,12 @@ Agente *Agente::mezcla(Agente *a)
  */
 int Agente::getEstadoInicial(int rank,int size, Matrix * qValues)
 {
-    int muestra = qValues->filas() / size;
+    /*int muestra = qValues->filas() / (size-1);
     int inicio = rank * muestra;
 
-    return inicio + rand() % muestra;
+
+    return inicio + rand() % (muestra);*/
+    return 0  + rand() % qValues->filas();
 
 }
 /**
@@ -330,13 +327,13 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
             m->guardarRecompensa(r);
         }
 
-        //#pragma omp critical
-        //  {
-        qValues->num(qValues->num(s,ac) +
-                     a *
-                     (r + y * qValues->num(sp,mejorAccion(sp,qValues))
-                      - qValues->num(s,ac) ),s,ac) ;
-        //   }
+#pragma omp critical
+        {
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                          - qValues->num(s,ac) ),s,ac) ;
+        }
         if(ec){
             experiencia->num( experiencia->num(s,ac) + 1,s,ac);
         }
@@ -347,7 +344,7 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
             system("pause");
 
         }*/
-        if(est->getEstado()->isTerminal() == true ){
+        if(est->getEstado()->isTerminal()  ){
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){
@@ -372,6 +369,10 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
 void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, bool ec)
 {
 
+    //  if( omp_get_thread_num() == 0){
+    //     cout<<e<<" e"<<endl;
+    //  }
+
     float r;   // recompensa
     int ac;    // accion
     int sp;   //estado siguiente
@@ -390,23 +391,28 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
         }
-        if(!est->getEstado()->isTerminal()){
-            acp =  politica(sp,qValues);
-            //#pragma omp critical
-            qValues->num(qValues->num(s,ac) +
-                         a *
-                         (r + y * qValues->num(sp,acp)
-                          - qValues->num(s,ac) ),s,ac) ;
+          acp =  politica(sp,qValues);
+//#pragma omp critical
+      // {
+             
+            if(!est->getEstado()->isTerminal()){
 
 
-        }else{
-            //   #pragma omp critical
-            qValues->num(qValues->num(s,ac) +
-                         a *
-                         (r  - qValues->num(s,ac) ),s,ac) ;
+                qValues->num(qValues->num(s,ac) +
+                             a *
+                             (r + y * qValues->num(sp,acp)
+                              - qValues->num(s,ac) ),s,ac) ;
 
 
-        }
+            }else{
+
+                qValues->num(qValues->num(s,ac) +
+                             a *
+                             (r  - qValues->num(s,ac) ),s,ac) ;
+
+
+            }
+       // }
         if(ec){
 
             experiencia->num( experiencia->num(s,ac) + 1,s,ac);
@@ -417,6 +423,7 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
             system("pause");
 
         }*/
+
         if(est->getEstado()->isTerminal()){
             bandera = false;
             disminuirE();
@@ -441,7 +448,7 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
 
 void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues, Entorno *entorno,bool ec)
 {
-    srand(time(NULL));
+
     int s = 0; // estado inicial
     int pasos =0;  // cantidad de pasos
     for(int i =0; i < it ; i++){
@@ -460,4 +467,55 @@ void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues
         //    cout<<"pasos: "<<pasos<<" por "<<rank<<endl;
 
     }
+
+}
+int Agente::menor(){
+    int rank = omp_get_thread_num();
+    int size = omp_get_num_threads();
+    int menor ,  mayor , muestra; //rango inferior y superior de los grupos
+
+
+    if(size == 1){
+        menor =0;
+        // muestra = mayor = qValues->filas();
+
+    }else if(size > 2){
+        muestra = qValues->filas() / (size -1);
+        if(rank == 0){
+            //  e = 0.30;
+            menor =0;
+            // mayor = qValues->filas();
+        }else if(rank == size - 1){
+            menor = (rank -1) * muestra ;
+            // mayor = qValues->filas();
+        }else{
+            menor = (rank -1 )* muestra ;
+            //  mayor = (rank ) * muestra ;
+        } }
+    return menor;
+}
+int Agente::mayor(){
+    int rank = omp_get_thread_num();
+    int size = omp_get_num_threads();
+    int menor ,  mayor , muestra; //rango inferior y superior de los grupos
+
+
+    if(size == 1){
+        // menor =0;
+        mayor = qValues->filas();
+
+    }else if(size > 2){
+        muestra = qValues->filas() / (size -1);
+        if(rank == 0){
+            //  e = 0.30;
+            //  menor =0;
+            mayor = qValues->filas();
+        }else if(rank == size - 1){
+            // menor = (rank -1) * muestra ;
+            mayor = qValues->filas();
+        }else{
+            // menor = (rank -1 )* muestra ;
+            mayor = (rank ) * muestra ;
+        }}
+    return mayor;
 }

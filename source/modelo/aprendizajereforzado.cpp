@@ -1,6 +1,6 @@
 #include "aprendizajereforzado.h"
 #include<source/utiles/recursos.h>
-
+#include<time.h>
 
 AprendizajeReforzado::AprendizajeReforzado(int dimension)
 {
@@ -39,25 +39,30 @@ void AprendizajeReforzado::entrenarETCentral(Algoritmo alg,  int it){
         iteraciones = frecuencia;
     }
     Agente * agTemp = new Agente(agente);
-  /*  cout<<"Q antes"<<endl;
+/*    cout<<"Q antes"<<endl;
     agTemp->getQValues()->mostrar();
     cout<<"E antes"<<endl;
     agTemp->getExperiencia()->mostrar();
-    system("pause");*/
+    system("pause");
+    system("cls");*/
     for(int i =0; i<ciclos ; i++){
 #pragma omp parallel reduction(mezcla:agTemp) private(rank)
         {
+
             size = omp_get_num_threads();
             rank = omp_get_thread_num();
+             srand(rank + time(NULL));
             agTemp->entrenar(alg,rank,size,iteraciones,agTemp->getQValues(),entorno,true);
         }
 
-      /*  cout<<"Q d a"<<endl;
+
+   /*     cout<<"Q despues de mezcalr"<<endl;
         agTemp->getQValues()->mostrar();
-        cout<<"E d a"<<endl;
+        cout<<"E despues de mezcalr"<<endl;
         agTemp->getExperiencia()->mostrar();
-        system("pause");*/
-        //agTemp->resetExp();
+        system("pause");
+        system("cls");
+        //agTemp->resetExp();*/
 
     }
     delete agente;
@@ -68,10 +73,10 @@ void AprendizajeReforzado::entrenarETComun(Algoritmo alg,  int it){
     int size =1, rank=0;
 
 //#pragma omp parallel private(rank)
-   // {
-        size = omp_get_num_threads();
-        rank = omp_get_thread_num();
-
+   //{
+      // size = omp_get_num_threads();
+      //  rank = omp_get_thread_num();
+         srand(rank + time(NULL));
         Agente * a = new Agente();
         a->entrenar(alg,rank,size,it,qValues,entorno,false);
    // }
