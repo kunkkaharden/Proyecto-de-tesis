@@ -21,7 +21,6 @@ SOURCES += main.cpp \
     source/auxiliar/cordenadas.cpp \
     source/auxiliar/estado.cpp \
     source/modelo/aprendizajereforzado.cpp \
-    source/utiles/recursos.cpp \
     source/utiles/episodio.cpp \
     source/utiles/metricas.cpp
 
@@ -35,7 +34,6 @@ HEADERS += \
     source/auxiliar/estado.h \
     aprendizajereforzado.h \
     source/modelo/aprendizajereforzado.h \
-    source/utiles/recursos.h \
     source/auxiliar/ar.h \
     source/utiles/episodio.h \
     source/utiles/metricas.h
