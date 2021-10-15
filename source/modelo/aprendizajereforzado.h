@@ -12,11 +12,13 @@ private:
     const int frecuencia = 1000;
 public:
     AprendizajeReforzado(int dimension);
-    void initETComun();
-    void initETCentral();
+    void initMAAC();
+    void initMA();
     Matrix * crearQvalues();
-    void entrenarETComun(Algoritmo alg, int it);
-    void entrenarETCentral(Algoritmo alg, int it);
+    void entrenarMAAC(Algoritmo alg, int it);
+    void entrenarMA(Algoritmo alg, int it);
+    void secuencial(Algoritmo alg, int it);
+
 
 };
 

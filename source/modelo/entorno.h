@@ -23,7 +23,7 @@ private:
 
 
 public:
-    Entorno(Matrix * en , Matrix *  re );
+    Entorno(int dimension );
     EstadoRecompensa *  accion(int accion, int est);
     void  hacerMapa();
     Cordenadas * toCordenada(int);
@@ -35,6 +35,8 @@ public:
     void setEntorno(Matrix *value);
     Matrix *getRecompensa() const;
     void setRecompensa(Matrix *value);
+    Matrix *crearEntorno(int n);
+    Matrix *crearRecompensas(int n);
 };
 
 #endif // ENTORNO_H

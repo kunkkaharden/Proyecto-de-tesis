@@ -26,8 +26,10 @@ void Entorno::setRecompensa(Matrix *value)
     recompensa = value;
 }
 
-Entorno::Entorno(Matrix *en, Matrix *re): entorno(en), recompensa(re)
+Entorno::Entorno(int dimension)
 {
+    entorno= crearEntorno(dimension);
+    recompensa= crearRecompensas(dimension);
     hacerMapa();
     
 }
@@ -79,7 +81,7 @@ EstadoRecompensa *Entorno::accion(int accion, int est)
 
     }
 
-  // mostrar(accion , estado);
+    // mostrar(accion , estado);
 
     Estado * retorno = new Estado(toInt(estado));
     if(entorno->num(estado->getF(),estado->getC())== 2){
@@ -156,7 +158,7 @@ void Entorno::mostrar(int accion , Cordenadas * estado){
         cout<<endl;
     }
     cout<<"***************"<<endl;
-   // system("pause");
+    // system("pause");
 }
 
 bool Entorno::posible(int s)
@@ -168,4 +170,29 @@ bool Entorno::posible(int s)
     }
     delete c;
     return p ;
+}
+
+
+/**
+ * Devuelve una matriz que sería la representación del entorno donde actua el agente
+ * 1 para todos los posibles estados
+ * 2 para la meta
+ */
+Matrix *Entorno::crearEntorno(int n)
+{
+    Matrix * r = new Matrix(1,n,n);
+    r->num(2,n-1,n-1);
+    return r;
+}
+/**
+ *  Devuelve una matriz con la recompenza obtenida por llegar a cada estado
+ * -1 para los estados no terminale
+ *  1 para el estado terminal
+ */
+
+Matrix *Entorno::crearRecompensas(int n)
+{ Matrix * r = new Matrix(-1,n,n);
+    r->num(1,n-1,n-1);
+    return r;
+
 }

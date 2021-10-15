@@ -15,22 +15,20 @@ void Metricas::guardarRecompensa(int recompensa)
 }
 
 
-void Metricas::finalizarEpisodio()
+bool Metricas::finalizarEpisodio()
 {
-
+    bool entrenado = false;
     historial->append( Episodio(acumulador,getTime()));
-  //  int promedio = getPromedio() ;
-
-  //  cout<<"Promedio: "<<promedio<<" Humbral: "<<humbral<<"len: "<<historial->length();
-    if (  getPromedio() > humbral ){
+    cout<<'\n'<<acumulador<<" r"<<endl;
+    if ( length() > m && getPromedio() > umbral ){
         cout<<"fin"<<endl;
         exportarCSV();
-        system("pause");
-         exit(0);
+        entrenado = true;
     }
 
-    cout<<'\n'<<acumulador<<" r"<<endl;
+
     acumulador =0;
+    return entrenado;
 }
 
 double Metricas::getTime()
@@ -51,7 +49,7 @@ void Metricas::exportarCSV()
         system("pause");
     }
     string temp = " ,recompensa,tiempo" ;
-     f<<temp<<endl;
+    f<<temp<<endl;
     for(int i =0; i< historial->length();i++){
         temp = to_string(i)  +","+ to_string(historial->at(i).getRecompensa())+","+ to_string(historial->at(i).getTiempo()) ;
 
@@ -60,9 +58,9 @@ void Metricas::exportarCSV()
     }
     temp = "tiemPo: ";
     temp += to_string(historial->at(historial->length() -1 ).getTiempo() - historial->at(0).getTiempo());
-   f<<temp<<endl;
+    f<<temp<<endl;
     f.close();
-    cout<<'\a';
+    cout<<temp<<'\a';
 
 
 }
@@ -80,10 +78,10 @@ int Metricas::getPromedio()
     int refuerzo = acumulador;
     int temp =0;
     if(historial->length()>m){
-      int  inicio = historial->length() - m ;
-      for (int i = inicio ; i < historial->length(); i ++ ){
-          temp += historial->at(i).getRecompensa();
-      }
+        int  inicio = historial->length() - m ;
+        for (int i = inicio ; i < historial->length(); i ++ ){
+            temp += historial->at(i).getRecompensa();
+        }
         refuerzo = temp / m;
     }
     return refuerzo;

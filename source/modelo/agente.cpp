@@ -64,29 +64,15 @@ void Agente::setY(float value)
     y = value;
 }
 /**
- * @brief Agente::floatRandom
- * @return float
  * Genera un número aleatorio [0.0, 0.99]
  */
 float Agente::floatRandom()
-{
-    //  srand(time(NULL));
+{ 
     float a = 0+ rand() %99;
-    //  float b = 0 + rand() % 10 ;
-    //  float num = 0 +( a/10) + (b / 100) ;
     return a/100;
-
-
-    /*  float a = 1+ rand() %9;
-    float b = 1 + rand() % 9 ;
-    float num = 0 +( a/10) + (b / 100) ;
-    return num;*/
 }
 /**
- * @brief Agente::accionRamdon
- * @param qValues
- * @return int [0, 3]
- * Devuelve una acción aleatoria
+ * Devuelve una acción aleatoria [0, 3]
  */
 int Agente::accionRamdon(Matrix *qValues)
 {
@@ -94,11 +80,7 @@ int Agente::accionRamdon(Matrix *qValues)
     return   0+ rand() % qValues->columnas();
 }
 /**
- * @brief Agente::politica
- * @param estado
- * @param qValues
- * @return int [0, 3]
- * Devuelve una acción dada la política aprendida
+ * Devuelve una acción dada la política aprendida [0, 3]
  */
 int Agente::politica(int estado, Matrix *qValues)
 {
@@ -113,11 +95,8 @@ int Agente::politica(int estado, Matrix *qValues)
     return accion;
 }
 /**
- * @brief Agente::mejorAccion
- * @param estado
- * @param qValues
- * @return int [0, 3]
- * Busca cual es la acción con mayor valor Q a partir de un estado dado.
+ *
+ * Busca cual es la acción con mayor valor Q a partir de un estado dado  int [0, 3].
  *
  */
 int Agente::mejorAccion(int estado, Matrix *qValues)
@@ -144,7 +123,9 @@ int Agente::mejorAccion(int estado, Matrix *qValues)
 
     return accion  ;
 }
-
+/**
+ * Disminuye el valor de e
+ */
 void Agente::disminuirE()
 {
     if(e > 0.02){
@@ -152,34 +133,18 @@ void Agente::disminuirE()
     }
 
 }
+
 /**
- * @brief Agente::resetExp
- * Vuelve  poner la matrix de experiencias en estado inicial
- */
-void Agente::resetExp()
-{
-    delete this->experiencia;
-    this->experiencia = new Matrix(1,this->qValues->filas(),this->qValues->columnas());
-}
-/**
- * @brief Agente::mezcla
- * @param a
- * @return Agente*
+ *
  * Combina los valores Q de cada a gente a partir de el número de veces que fue actualizado,
  * descartando el valor que menos veces fue actualizado y en caso de empate se hace un promedio entre los 2.
  */
 Agente *Agente::mezcla(Agente *a)
 {
-    ;
+
     float qTemp1, qTemp2;//qvalues temporales
     float eTemp1, eTemp2;//experincias temporales
 
-    /* cout<<"Q mezcla this"<<endl;
-  this->getQValues()->mostrar();
-  cout<<"E mezcla this"<<endl;
-  this->getExperiencia()->mostrar();
-  system("pause");
-  system("cls");*/
 
     int i =0;
     int j =0;
@@ -198,8 +163,7 @@ Agente *Agente::mezcla(Agente *a)
                 this->qValues->num(qTemp2,i,j);
                 this->experiencia->num(eTemp2,i,j);
             }
-            //  q->num(((qTemp1*eTemp1)+(qTemp2*eTemp2))/(eTemp1 + eTemp2),i,j);
-            // eTemp1 > eTemp2 ?  q->num(qTemp1,i,j) : q->num(qTemp2,i,j);
+
         }
     }
 
@@ -208,46 +172,25 @@ Agente *Agente::mezcla(Agente *a)
     this->getE() < a->getE() ? this->setE(this->getE()) : this->setE(a->getE());
     this->getM()->length() > a->getM()->length() ? this->setM(this->getM()) : this->setM(a->getM());
 
-    /*
-    cout<<"Q mezcla a"<<endl;
-    a->getQValues()->mostrar();
-    cout<<"E mezcla a"<<endl;
-    a->getExperiencia()->mostrar();
-    system("pause");
-    system("cls");
 
-    cout<<"Q mezcla r"<<endl;
-    this->getQValues()->mostrar();
-    cout<<"E mezcla r"<<endl;
-    this->getExperiencia()->mostrar();
-    system("pause");
-    system("cls");
-    */
     delete a;
-    // this->liberarRecursos();
     return this;
 }
 /**
- * @brief Agente::getEstadoInicial
- * @param rank
- * @param size
- * @param qValues
- * @return Devuelve el estado inicial de cada episodio en dependencia del agen.
+ *
+ * @return Devuelve el estado inicial de cada episodio.
  */
-int Agente::getEstadoInicial(int rank,int size, Matrix * qValues)
+int Agente::getEstadoInicial(int rank, Matrix * qValues)
 {
-    /*int muestra = qValues->filas() / (size-1);
-    int inicio = rank * muestra;
-
-
-    return inicio + rand() % (muestra);*/
-    return 0  + rand() % qValues->filas();
+    int s =0;
+    if(rank !=0){
+        s = 0  + rand() % qValues->filas();
+    }
+    return s;
 
 }
-/**
- * @brief Agente::Agente
- * Constructor en el caso de tabla Q externa
- */
+
+
 Metricas *Agente::getM() const
 {
     return m;
@@ -258,6 +201,8 @@ void Agente::setM(Metricas *value)
     m = value;
 }
 
+
+
 Agente::Agente()
 {   m = new Metricas();
     qValues = NULL;
@@ -265,8 +210,6 @@ Agente::Agente()
 
 }
 /**
- * @brief Agente::Agente
- * @param a
  * Contructor copia
  */
 Agente::Agente(Agente *a)
@@ -277,18 +220,7 @@ Agente::Agente(Agente *a)
     this->e = a->e;
 
 }
-/**
- * @brief Agente::Agente
- * @param q
- * @param e
- * Constructor a partir de la tabla Q y las experienias
- */
-Agente::Agente(Matrix *q, Matrix *e)
-{   m = new Metricas();
-    this->qValues = q;
-    this->experiencia =e;
 
-}
 
 Agente::Agente(Matrix *q)
 {   m = new Metricas();
@@ -365,6 +297,51 @@ void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool e
     }
 
 }
+/**
+ * Q-Learning Secuencial
+ */
+bool Agente::qLearningSEC( Entorno *entorno)
+{
+    int pasos =0;
+    bool entrenado = false;
+    int s =0; // estado actual
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    bool bandera = true; //para el fin de episodio
+    //**************
+    while(bandera){
+        pasos++;
+
+        ac = politica(s,qValues);
+        delete est;
+        est = entorno->accion(ac,s);
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        m->guardarRecompensa(r);
+        qValues->num(qValues->num(s,ac) +
+                     a *
+                     (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                      - qValues->num(s,ac) ),s,ac) ;
+
+
+        s = sp;
+
+        if(est->getEstado()->isTerminal()  ){
+            bandera = false;
+            disminuirE();
+            entrenado = m->finalizarEpisodio();
+
+        }
+        if(pasos > 500000){
+            bandera = false;
+        }
+
+    }
+    return entrenado;
+}
 
 void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, bool ec)
 {
@@ -391,28 +368,28 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
         }
-          acp =  politica(sp,qValues);
-//#pragma omp critical
-      // {
-             
-            if(!est->getEstado()->isTerminal()){
+        acp =  politica(sp,qValues);
+        //#pragma omp critical
+        // {
+
+        if(!est->getEstado()->isTerminal()){
 
 
-                qValues->num(qValues->num(s,ac) +
-                             a *
-                             (r + y * qValues->num(sp,acp)
-                              - qValues->num(s,ac) ),s,ac) ;
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,acp)
+                          - qValues->num(s,ac) ),s,ac) ;
 
 
-            }else{
+        }else{
 
-                qValues->num(qValues->num(s,ac) +
-                             a *
-                             (r  - qValues->num(s,ac) ),s,ac) ;
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r  - qValues->num(s,ac) ),s,ac) ;
 
 
-            }
-       // }
+        }
+        // }
         if(ec){
 
             experiencia->num( experiencia->num(s,ac) + 1,s,ac);
@@ -444,78 +421,370 @@ void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, b
     }
 
 }
-
-
-void Agente::entrenar(Algoritmo alg ,int rank, int size, int it, Matrix *qValues, Entorno *entorno,bool ec)
+/**
+ * SARSA-Learning Secuencial
+ */
+bool Agente::sarsaLearningSEC(Entorno *entorno)
 {
+    bool entrenado = false;
+    int pasos =0;
+    int s =0; // estado actual
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    int acp;  // accion siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    ac = politica(s,qValues);
+    bool bandera = true; //para el fin de episodio
+    while(bandera){
+        pasos++;
 
-    int s = 0; // estado inicial
-    int pasos =0;  // cantidad de pasos
-    for(int i =0; i < it ; i++){
-        //  cout<<'.';
-        pasos =0;
-        if (rank !=0){
-            s = getEstadoInicial(rank,size,qValues);
+        delete est;
+        est = entorno->accion(ac,s); //informacion del estado siguiente
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
         }
-        if(alg == SARSA_Learning){
-            sarsaLearning(s,&pasos,qValues,entorno,ec);
-        }else if(alg == Q_Learning){
-            qLearning(s,&pasos,qValues,entorno,ec);
+        acp =  politica(sp,qValues);
+
+
+        if(!est->getEstado()->isTerminal()){
+
+
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,acp)
+                          - qValues->num(s,ac) ),s,ac) ;
+
+
+        }else{
+
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r  - qValues->num(s,ac) ),s,ac) ;
+
+
         }
 
-        //  if(rank == 0)
-        //    cout<<"pasos: "<<pasos<<" por "<<rank<<endl;
+        s = sp; ac = acp;
+
+
+        if(est->getEstado()->isTerminal()){
+            bandera = false;
+            disminuirE();
+            entrenado =  m->finalizarEpisodio();
+        }
+        if(pasos > 500000){
+            bandera = false;
+        }
 
     }
 
+    return entrenado;
+
 }
-int Agente::menor(){
-    int rank = omp_get_thread_num();
-    int size = omp_get_num_threads();
-    int menor ,  mayor , muestra; //rango inferior y superior de los grupos
+/**
+ * Q-Learning para multiagente
+ */
+bool Agente::qLearningMA(int s,Entorno *entorno)
+{
+    bool entrenado = false;
+    int pasos =0;
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    bool bandera = true; //para el fin de episodio
+    //**************
+    while(bandera){
+        pasos++;
+
+        ac = politica(s,qValues);
+        delete est;
+        est = entorno->accion(ac,s);
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
+        }
 
 
-    if(size == 1){
-        menor =0;
-        // muestra = mayor = qValues->filas();
+        qValues->num(qValues->num(s,ac) +
+                     a *
+                     (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                      - qValues->num(s,ac) ),s,ac) ;
 
-    }else if(size > 2){
-        muestra = qValues->filas() / (size -1);
-        if(rank == 0){
-            //  e = 0.30;
-            menor =0;
-            // mayor = qValues->filas();
-        }else if(rank == size - 1){
-            menor = (rank -1) * muestra ;
-            // mayor = qValues->filas();
+
+        experiencia->num( experiencia->num(s,ac) + 1,s,ac);
+
+        s = sp;
+
+        if(est->getEstado()->isTerminal()  ){
+            bandera = false;
+            disminuirE();
+            if( omp_get_thread_num() == 0){
+                entrenado =  m->finalizarEpisodio();
+            }
+
+        }
+        if(pasos > 500000){
+            bandera = false;
+        }
+
+    }
+    return entrenado ;
+}
+/**
+ * SARSA-Learning Multiagente
+ */
+bool Agente::sarsaLearningMA(int s,Entorno *entorno)
+{
+
+    int  pasos =0;
+    bool entrenado = false;
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    int acp;  // accion siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    ac = politica(s,qValues);
+    bool bandera = true; //para el fin de episodio
+    while(bandera){
+        pasos++;
+
+        delete est;
+        est = entorno->accion(ac,s); //informacion del estado siguiente
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
+        }
+        acp =  politica(sp,qValues);
+
+
+        if(!est->getEstado()->isTerminal()){
+
+
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,acp)
+                          - qValues->num(s,ac) ),s,ac) ;
+
+
         }else{
-            menor = (rank -1 )* muestra ;
-            //  mayor = (rank ) * muestra ;
-        } }
-    return menor;
+
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r  - qValues->num(s,ac) ),s,ac) ;
+
+
+        }
+
+        experiencia->num( experiencia->num(s,ac) + 1,s,ac);
+
+        s = sp; ac = acp;
+
+        if(est->getEstado()->isTerminal()){
+            bandera = false;
+            disminuirE();
+            if( omp_get_thread_num() == 0){
+                entrenado =     m->finalizarEpisodio();
+            }
+
+        }
+        if(pasos > 500000){
+            bandera = false;
+
+
+
+        }
+
+    }
+    return entrenado ;
 }
-int Agente::mayor(){
-    int rank = omp_get_thread_num();
-    int size = omp_get_num_threads();
-    int menor ,  mayor , muestra; //rango inferior y superior de los grupos
+
+/**
+ *Q-Learning Multiagente con actualizacion constante
+ */
+bool Agente::qLearningMAAC(int s, Matrix *qValues,Entorno *entorno)
+{
 
 
-    if(size == 1){
-        // menor =0;
-        mayor = qValues->filas();
+    bool entrenado= false;
+    int pasos= 0;
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    bool bandera = true; //para el fin de episodio
+    //**************
+    while(bandera){
+        pasos++;
 
-    }else if(size > 2){
-        muestra = qValues->filas() / (size -1);
-        if(rank == 0){
-            //  e = 0.30;
-            //  menor =0;
-            mayor = qValues->filas();
-        }else if(rank == size - 1){
-            // menor = (rank -1) * muestra ;
-            mayor = qValues->filas();
+        ac = politica(s,qValues);
+        delete est;
+        est = entorno->accion(ac,s);
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
+        }
+
+#pragma omp critical
+        {
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,mejorAccion(sp,qValues))
+                          - qValues->num(s,ac) ),s,ac) ;
+        }
+
+        s = sp;
+
+        if(est->getEstado()->isTerminal()  ){
+            bandera = false;
+            disminuirE();
+            if( omp_get_thread_num() == 0){
+              entrenado=  m->finalizarEpisodio();
+            }
+
+
+        }
+        if(pasos > 500000){
+            bandera = false;
+
+
+
+        }
+
+    }
+return entrenado;
+}
+
+
+bool Agente::sarsaLearningMAAC(int s, Matrix *qValues,Entorno *entorno)
+{
+
+bool entrenado= false;
+int pasos= 0;
+    float r;   // recompensa
+    int ac;    // accion
+    int sp;   //estado siguiente
+    int acp;  // accion siguiente
+    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    ac = politica(s,qValues);
+    bool bandera = true; //para el fin de episodio
+    while(bandera){
+        pasos++;
+
+        delete est;
+        est = entorno->accion(ac,s); //informacion del estado siguiente
+
+        sp = est->getEstado()->getIndex();
+        r = est->getRecompensa();
+        if( omp_get_thread_num() == 0){
+            m->guardarRecompensa(r);
+        }
+        acp =  politica(sp,qValues);
+        #pragma omp critical
+         {
+
+        if(!est->getEstado()->isTerminal()){
+
+
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r + y * qValues->num(sp,acp)
+                          - qValues->num(s,ac) ),s,ac) ;
+
+
         }else{
-            // menor = (rank -1 )* muestra ;
-            mayor = (rank ) * muestra ;
-        }}
-    return mayor;
+
+            qValues->num(qValues->num(s,ac) +
+                         a *
+                         (r  - qValues->num(s,ac) ),s,ac) ;
+
+
+        }
+        }
+
+        s = sp; ac = acp;
+
+
+        if(est->getEstado()->isTerminal()){
+            bandera = false;
+            disminuirE();
+            if( omp_get_thread_num() == 0){
+               entrenado= m->finalizarEpisodio();
+            }
+        }
+        if(pasos > 500000){
+            bandera = false;
+
+
+
+        }
+
+    }
+  return entrenado;
 }
+
+
+void Agente::entrenarSEC(Algoritmo alg , int it, Entorno *entorno)
+{
+    int i =0;
+    bool entrenado = false;
+    while (i < it && !entrenado){
+
+        if(alg == SARSA_Learning){
+            entrenado =  sarsaLearningSEC(entorno);
+        }else if(alg == Q_Learning){
+            entrenado =  qLearningSEC(entorno);
+        }
+        i++;
+    }
+
+}
+bool Agente::entrenarMA(Algoritmo alg ,int rank, int it,  Entorno *entorno)
+{
+    bool entrenado = false;
+    int s = 0; // estado inicial
+    int i =0;
+    while (i < it && !entrenado){
+
+        s = getEstadoInicial(rank,qValues);
+
+        if(alg == SARSA_Learning){
+            entrenado =  sarsaLearningMA(s,entorno);
+        }else if(alg == Q_Learning){
+            entrenado =  qLearningMA(s,entorno);
+        }
+        i++;
+    }
+    return entrenado;
+}
+void Agente::entrenarMAAC(Algoritmo alg ,int rank, int it, Matrix *qValues, Entorno *entorno)
+{
+
+    int s = 0; // estado inicial
+    bool entrenado = false;
+    int i =0;
+    while( i < it && !entrenado){
+
+        s = getEstadoInicial(rank,qValues);
+
+        if(alg == SARSA_Learning){
+            entrenado =   sarsaLearningMAAC(s,qValues,entorno);
+        }else if(alg == Q_Learning){
+            entrenado =   qLearningMAAC(s,qValues,entorno);
+        }
+        i++;
+    }
+
+
+}
+

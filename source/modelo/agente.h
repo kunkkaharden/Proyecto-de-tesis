@@ -22,9 +22,9 @@ private:
     float y = 0.99;    //[0-1] factor de descuento    0: corto plazo  1: largo plazo
 
 public:
+
     Agente();
      Agente(Agente*);
-      Agente(Matrix * q,Matrix * e);
       Agente(Matrix * q);
     Matrix *getQValues() const;
     void setQValues(Matrix *value);
@@ -43,16 +43,24 @@ public:
     void disminuirE();
     void resetExp();
     Agente *mezcla(Agente *a);
-   int getEstadoInicial(int rank, int size, Matrix *qValues); 
+   int getEstadoInicial(int rank, Matrix *qValues);
    void qLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno, bool ec);
    void sarsaLearning(int s, int *pasos, Matrix *qValues, Entorno *entorno, bool ec);
-   void entrenar(Algoritmo alg, int rank, int size, int it, Matrix *qValues, Entorno *entorno, bool ec);
-   Metricas *getM() const;
+    Metricas *getM() const;
    void setM(Metricas *value);
    ~Agente();
    void liberarRecursos();
    int mayor();
    int menor();
+   bool qLearningSEC(Entorno *entorno);
+   bool qLearningMA(int s, Entorno *entorno);
+   bool sarsaLearningSEC( Entorno *entorno);
+   bool sarsaLearningMA(int s, Entorno *entorno);
+   void entrenarSEC(Algoritmo alg, int it, Entorno *entorno);
+   bool entrenarMA(Algoritmo alg, int rank, int it, Entorno *entorno);
+   void entrenarMAAC(Algoritmo alg, int rank, int it, Matrix *qValues, Entorno *entorno);
+   bool sarsaLearningMAAC(int s, Matrix *qValues, Entorno *entorno);
+   bool qLearningMAAC(int s, Matrix *qValues, Entorno *entorno);
 };
 
 #endif // AGENTE_H

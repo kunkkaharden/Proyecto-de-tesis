@@ -4,7 +4,7 @@
 AprendizajeReforzado::AprendizajeReforzado(int dimension)
 {
 
-    entorno = new Entorno(crearEntorno(dimension),crearRecompensas(dimension));
+    entorno = new Entorno(dimension);
 }
 
 
@@ -26,98 +26,66 @@ Matrix *AprendizajeReforzado::crearQvalues()
 void AprendizajeReforzado::entrenarMA(Algoritmo alg,  int it){
 #pragma omp declare reduction(mezcla: Agente *: omp_out = omp_out->mezcla(omp_in)) initializer(omp_priv=new Agente(omp_orig))
 
-    initETCentral();
+    initMA();
     int size , rank;
-    int ciclos ; //numéro de veces que se van a realizar n cantidad de episodios donde n = frecuencia int size , rank;
+    int ciclos,i=0 ; //numéro de veces que se van a realizar n cantidad de episodios donde n = frecuencia int size , rank;
     int iteraciones; // número de episodios por ciclo
-    if(it < frecuencia ){
-        ciclos = 1;
-        iteraciones = it ;
-    }
-    else{
-        ciclos = it / frecuencia ;
-        iteraciones = frecuencia;
-    }
+    bool entrenado = false;
+    ciclos = it / frecuencia ;
+    iteraciones = frecuencia;
+
     Agente * agTemp = new Agente(agente);
-    /*    cout<<"Q antes"<<endl;
-    agTemp->getQValues()->mostrar();
-    cout<<"E antes"<<endl;
-    agTemp->getExperiencia()->mostrar();
-    system("pause");
-    system("cls");*/
-    for(int i =0; i<ciclos ; i++){
+
+    while( i<ciclos && !entrenado){
 #pragma omp parallel reduction(mezcla:agTemp) private(rank)
         {
-
+bool temp= false;
             size = omp_get_num_threads();
             rank = omp_get_thread_num();
             srand(rank + time(NULL));
-            agTemp->entrenar(alg,rank,size,iteraciones,agTemp->getQValues(),entorno,true);
+      temp=  agTemp->entrenarMA(alg,rank,iteraciones,entorno);
+
+if(rank==0){
+     entrenado=temp;
+}
         }
 
 
-        /*     cout<<"Q despues de mezcalr"<<endl;
-        agTemp->getQValues()->mostrar();
-        cout<<"E despues de mezcalr"<<endl;
-        agTemp->getExperiencia()->mostrar();
-        system("pause");
-        system("cls");
-        //agTemp->resetExp();*/
-
+        i++;
     }
     delete agente;
     agente = new Agente(agTemp);
 }
+/**
+ *
+ */
 void AprendizajeReforzado::entrenarMAAC(Algoritmo alg,  int it){
-    initETComun();
+    initMAAC();
     int size =1, rank=0;
 
-    //#pragma omp parallel private(rank)
-    //{
-    // size = omp_get_num_threads();
-    //  rank = omp_get_thread_num();
-    srand(rank + time(NULL));
-    Agente * a = new Agente();
-    a->entrenar(alg,rank,size,it,qValues,entorno,false);
-    // }
+#pragma omp parallel private(rank)
+    {
+        size = omp_get_num_threads();
+        rank = omp_get_thread_num();
+        srand(rank + time(NULL));
+        Agente * a = new Agente();
+        a->entrenarMAAC(alg,rank,it,qValues,entorno);
+    }
 }
-
+/**
+ * Ejecuta los algoritmos de forma secuencial
+ */
 void AprendizajeReforzado::secuencial(Algoritmo alg, int it)
 {
-    initETComun();
-    int size =1, rank=0;
+
+    initMA();
+
     srand(time(NULL));
-    Agente * a = new Agente();
-    a->entrenar(alg,rank,size,it,qValues,entorno,false);
+
+    agente->entrenarSEC(alg,it,entorno);
 
 }
 
 
-/**
- * @brief Recursos::crearEntorno
- * @param n
- * @return Devuelve una matriz que sería la representación del entorno donde actua el agente
- * 1 para todos los posibles estados
- * 2 para la meta
- */
-Matrix *AprendizajeReforzado::crearEntorno(int n)
-{
-    Matrix * r = new Matrix(1,n,n);
-    r->num(2,n-1,n-1);
-    return r;
-}
-/**
- * @brief Recursos::crearRecompensas
- * @param n
- * @return Devuelve una matriz con la recompenza obtenida por llegar a cada estado
- * -1 para los estados no terminale
- *  1 para el estado terminal
- */
 
-Matrix *AprendizajeReforzado::crearRecompensas(int n)
-{ Matrix * r = new Matrix(-1,n,n);
-    r->num(1,n-1,n-1);
-    return r;
-
-}
 
