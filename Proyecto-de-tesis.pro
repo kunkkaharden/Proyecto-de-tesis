@@ -17,7 +17,6 @@ SOURCES += main.cpp \
     source/modelo/entorno.cpp \
     source/utiles/arreglofloat.cpp \
     source/utiles/matrix.cpp \
-    source/auxiliar/estadoRecompensa.cpp \
     source/auxiliar/cordenadas.cpp \
     source/auxiliar/estado.cpp \
     source/modelo/aprendizajereforzado.cpp \
@@ -29,7 +28,6 @@ HEADERS += \
     source/modelo/entorno.h \
     source/utiles/arreglofloat.h \
     source/utiles/matrix.h \
-    source/auxiliar/estadoRecompensa.h \
     source/auxiliar/cordenadas.h \
     source/auxiliar/estado.h \
     aprendizajereforzado.h \

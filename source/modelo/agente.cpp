@@ -228,76 +228,6 @@ Agente::Agente(Matrix *q)
     this->experiencia = new Matrix(1,q->filas(),q->columnas());
 }
 /**
- * @brief Agente::qLearning
- * @param s
- * @param pasos
- * @param qValues
- * @param entorno
- * @param ec si se está usando el enfoque de tabla central
- */
-void Agente::qLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno,bool ec)
-{
-
-
-
-    float r;   // recompensa
-    int ac;    // accion
-    int sp;   //estado siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
-    bool bandera = true; //para el fin de episodio
-    //**************
-    while(bandera){
-        (*pasos)++;
-
-        ac = politica(s,qValues);
-        delete est;
-        est = entorno->accion(ac,s);
-
-        sp = est->getEstado()->getIndex();
-        r = est->getRecompensa();
-        if( omp_get_thread_num() == 0){
-            m->guardarRecompensa(r);
-        }
-
-#pragma omp critical
-        {
-            qValues->num(qValues->num(s,ac) +
-                         a *
-                         (r + y * qValues->num(sp,mejorAccion(sp,qValues))
-                          - qValues->num(s,ac) ),s,ac) ;
-        }
-        if(ec){
-            experiencia->num( experiencia->num(s,ac) + 1,s,ac);
-        }
-        s = sp;
-        /*if(rank == 0){
-            entorno->mostrar(ac,s);
-            cout<<"rank: "<<rank<<endl;
-            system("pause");
-
-        }*/
-        if(est->getEstado()->isTerminal()  ){
-            bandera = false;
-            disminuirE();
-            if( omp_get_thread_num() == 0){
-                m->finalizarEpisodio();
-            }
-
-            //   cout<<"encontro meta"<<endl;
-            //  agente->getValues()->mostrar();
-            //   system("pause");
-        }
-        if((*pasos) > 500000){
-            bandera = false;
-
-
-            //   cout<<"Demaciados pasos  >2000"<<endl;
-        }
-
-    }
-
-}
-/**
  * Q-Learning Secuencial
  */
 bool Agente::qLearningSEC( Entorno *entorno)
@@ -308,7 +238,7 @@ bool Agente::qLearningSEC( Entorno *entorno)
     float r;   // recompensa
     int ac;    // accion
     int sp;   //estado siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    Estado * est = new Estado(0,0);
     bool bandera = true; //para el fin de episodio
     //**************
     while(bandera){
@@ -318,7 +248,7 @@ bool Agente::qLearningSEC( Entorno *entorno)
         delete est;
         est = entorno->accion(ac,s);
 
-        sp = est->getEstado()->getIndex();
+        sp = est->getIndex();
         r = est->getRecompensa();
         m->guardarRecompensa(r);
         qValues->num(qValues->num(s,ac) +
@@ -329,7 +259,7 @@ bool Agente::qLearningSEC( Entorno *entorno)
 
         s = sp;
 
-        if(est->getEstado()->isTerminal()  ){
+        if(est->isTerminal()  ){
             bandera = false;
             disminuirE();
             entrenado = m->finalizarEpisodio();
@@ -343,84 +273,6 @@ bool Agente::qLearningSEC( Entorno *entorno)
     return entrenado;
 }
 
-void Agente::sarsaLearning(int s,int *pasos, Matrix *qValues,Entorno *entorno, bool ec)
-{
-
-    //  if( omp_get_thread_num() == 0){
-    //     cout<<e<<" e"<<endl;
-    //  }
-
-    float r;   // recompensa
-    int ac;    // accion
-    int sp;   //estado siguiente
-    int acp;  // accion siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
-    ac = politica(s,qValues);
-    bool bandera = true; //para el fin de episodio
-    while(bandera){
-        (*pasos)++;
-
-        delete est;
-        est = entorno->accion(ac,s); //informacion del estado siguiente
-
-        sp = est->getEstado()->getIndex();
-        r = est->getRecompensa();
-        if( omp_get_thread_num() == 0){
-            m->guardarRecompensa(r);
-        }
-        acp =  politica(sp,qValues);
-        //#pragma omp critical
-        // {
-
-        if(!est->getEstado()->isTerminal()){
-
-
-            qValues->num(qValues->num(s,ac) +
-                         a *
-                         (r + y * qValues->num(sp,acp)
-                          - qValues->num(s,ac) ),s,ac) ;
-
-
-        }else{
-
-            qValues->num(qValues->num(s,ac) +
-                         a *
-                         (r  - qValues->num(s,ac) ),s,ac) ;
-
-
-        }
-        // }
-        if(ec){
-
-            experiencia->num( experiencia->num(s,ac) + 1,s,ac);
-        }
-        s = sp; ac = acp;
-        /*  if(rank == 0){
-            entorno->mostrar(ac,s);
-            system("pause");
-
-        }*/
-
-        if(est->getEstado()->isTerminal()){
-            bandera = false;
-            disminuirE();
-            if( omp_get_thread_num() == 0){
-                m->finalizarEpisodio();
-            }
-            //   cout<<"encontro meta"<<endl;
-            //  agente->getValues()->mostrar();
-            //   system("pause");
-        }
-        if((*pasos) > 500000){
-            bandera = false;
-
-
-            //   cout<<"Demaciados pasos  >2000"<<endl;
-        }
-
-    }
-
-}
 /**
  * SARSA-Learning Secuencial
  */
@@ -433,7 +285,7 @@ bool Agente::sarsaLearningSEC(Entorno *entorno)
     int ac;    // accion
     int sp;   //estado siguiente
     int acp;  // accion siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    Estado * est = new Estado(0,0);
     ac = politica(s,qValues);
     bool bandera = true; //para el fin de episodio
     while(bandera){
@@ -442,7 +294,7 @@ bool Agente::sarsaLearningSEC(Entorno *entorno)
         delete est;
         est = entorno->accion(ac,s); //informacion del estado siguiente
 
-        sp = est->getEstado()->getIndex();
+        sp = est->getIndex();
         r = est->getRecompensa();
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
@@ -450,7 +302,7 @@ bool Agente::sarsaLearningSEC(Entorno *entorno)
         acp =  politica(sp,qValues);
 
 
-        if(!est->getEstado()->isTerminal()){
+        if(!est->isTerminal()){
 
 
             qValues->num(qValues->num(s,ac) +
@@ -471,7 +323,7 @@ bool Agente::sarsaLearningSEC(Entorno *entorno)
         s = sp; ac = acp;
 
 
-        if(est->getEstado()->isTerminal()){
+        if(est->isTerminal()){
             bandera = false;
             disminuirE();
             entrenado =  m->finalizarEpisodio();
@@ -495,7 +347,7 @@ bool Agente::qLearningMA(int s,Entorno *entorno)
     float r;   // recompensa
     int ac;    // accion
     int sp;   //estado siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    Estado * est = new Estado(0,0);
     bool bandera = true; //para el fin de episodio
     //**************
     while(bandera){
@@ -505,7 +357,7 @@ bool Agente::qLearningMA(int s,Entorno *entorno)
         delete est;
         est = entorno->accion(ac,s);
 
-        sp = est->getEstado()->getIndex();
+        sp = est->getIndex();
         r = est->getRecompensa();
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
@@ -522,7 +374,7 @@ bool Agente::qLearningMA(int s,Entorno *entorno)
 
         s = sp;
 
-        if(est->getEstado()->isTerminal()  ){
+        if(est->isTerminal()  ){
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){
@@ -549,7 +401,7 @@ bool Agente::sarsaLearningMA(int s,Entorno *entorno)
     int ac;    // accion
     int sp;   //estado siguiente
     int acp;  // accion siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    Estado * est = new Estado(0,0);
     ac = politica(s,qValues);
     bool bandera = true; //para el fin de episodio
     while(bandera){
@@ -558,7 +410,7 @@ bool Agente::sarsaLearningMA(int s,Entorno *entorno)
         delete est;
         est = entorno->accion(ac,s); //informacion del estado siguiente
 
-        sp = est->getEstado()->getIndex();
+        sp = est->getIndex();
         r = est->getRecompensa();
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
@@ -566,7 +418,7 @@ bool Agente::sarsaLearningMA(int s,Entorno *entorno)
         acp =  politica(sp,qValues);
 
 
-        if(!est->getEstado()->isTerminal()){
+        if(!est->isTerminal()){
 
 
             qValues->num(qValues->num(s,ac) +
@@ -588,7 +440,7 @@ bool Agente::sarsaLearningMA(int s,Entorno *entorno)
 
         s = sp; ac = acp;
 
-        if(est->getEstado()->isTerminal()){
+        if(est->isTerminal()){
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){
@@ -619,7 +471,7 @@ bool Agente::qLearningMAAC(int s, Matrix *qValues,Entorno *entorno)
     float r;   // recompensa
     int ac;    // accion
     int sp;   //estado siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    Estado * est = new Estado(0,0);
     bool bandera = true; //para el fin de episodio
     //**************
     while(bandera){
@@ -629,7 +481,7 @@ bool Agente::qLearningMAAC(int s, Matrix *qValues,Entorno *entorno)
         delete est;
         est = entorno->accion(ac,s);
 
-        sp = est->getEstado()->getIndex();
+        sp = est->getIndex();
         r = est->getRecompensa();
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
@@ -645,7 +497,7 @@ bool Agente::qLearningMAAC(int s, Matrix *qValues,Entorno *entorno)
 
         s = sp;
 
-        if(est->getEstado()->isTerminal()  ){
+        if(est->isTerminal()  ){
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){
@@ -675,7 +527,7 @@ int pasos= 0;
     int ac;    // accion
     int sp;   //estado siguiente
     int acp;  // accion siguiente
-    EstadoRecompensa * est = new EstadoRecompensa(0,0);
+    Estado * est = new Estado(0,0);
     ac = politica(s,qValues);
     bool bandera = true; //para el fin de episodio
     while(bandera){
@@ -684,7 +536,7 @@ int pasos= 0;
         delete est;
         est = entorno->accion(ac,s); //informacion del estado siguiente
 
-        sp = est->getEstado()->getIndex();
+        sp = est->getIndex();
         r = est->getRecompensa();
         if( omp_get_thread_num() == 0){
             m->guardarRecompensa(r);
@@ -693,7 +545,7 @@ int pasos= 0;
         #pragma omp critical
          {
 
-        if(!est->getEstado()->isTerminal()){
+        if(!est->isTerminal()){
 
 
             qValues->num(qValues->num(s,ac) +
@@ -715,7 +567,7 @@ int pasos= 0;
         s = sp; ac = acp;
 
 
-        if(est->getEstado()->isTerminal()){
+        if(est->isTerminal()){
             bandera = false;
             disminuirE();
             if( omp_get_thread_num() == 0){

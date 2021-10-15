@@ -27,7 +27,7 @@ void AprendizajeReforzado::entrenarMA(Algoritmo alg,  int it){
 #pragma omp declare reduction(mezcla: Agente *: omp_out = omp_out->mezcla(omp_in)) initializer(omp_priv=new Agente(omp_orig))
 
     initMA();
-    int size , rank;
+    int rank;
     int ciclos,i=0 ; //numéro de veces que se van a realizar n cantidad de episodios donde n = frecuencia int size , rank;
     int iteraciones; // número de episodios por ciclo
     bool entrenado = false;
@@ -40,7 +40,6 @@ void AprendizajeReforzado::entrenarMA(Algoritmo alg,  int it){
 #pragma omp parallel reduction(mezcla:agTemp) private(rank)
         {
 bool temp= false;
-            size = omp_get_num_threads();
             rank = omp_get_thread_num();
             srand(rank + time(NULL));
       temp=  agTemp->entrenarMA(alg,rank,iteraciones,entorno);
@@ -61,11 +60,11 @@ if(rank==0){
  */
 void AprendizajeReforzado::entrenarMAAC(Algoritmo alg,  int it){
     initMAAC();
-    int size =1, rank=0;
+    int  rank=0;
 
 #pragma omp parallel private(rank)
     {
-        size = omp_get_num_threads();
+
         rank = omp_get_thread_num();
         srand(rank + time(NULL));
         Agente * a = new Agente();

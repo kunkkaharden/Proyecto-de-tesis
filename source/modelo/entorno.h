@@ -1,14 +1,9 @@
 #ifndef ENTORNO_H
 #define ENTORNO_H
-//#include<matrix.h>
 #include<source/utiles/matrix.h>
 #include<iostream>
-//#include<estado_recompensa.h>
-#include<source/auxiliar/estadoRecompensa.h>
-//#include <cordenadas.h>
 #include<source/auxiliar/cordenadas.h>
 #include<source/auxiliar/estado.h>
-#include<vector>
 #include<QList>
 
 
@@ -24,7 +19,7 @@ private:
 
 public:
     Entorno(int dimension );
-    EstadoRecompensa *  accion(int accion, int est);
+    Estado *  accion(int accion, int est);
     void  hacerMapa();
     Cordenadas * toCordenada(int);
     int toInt(Cordenadas * c);

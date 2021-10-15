@@ -34,7 +34,7 @@ Entorno::Entorno(int dimension)
     
 }
 
-EstadoRecompensa *Entorno::accion(int accion, int est)
+Estado *Entorno::accion(int accion, int est)
 {
 
 
@@ -83,15 +83,14 @@ EstadoRecompensa *Entorno::accion(int accion, int est)
 
     // mostrar(accion , estado);
 
-    Estado * retorno = new Estado(toInt(estado));
+    Estado * retorno = new Estado(toInt(estado), recompensa->num(estado->getF(), estado->getC()));
     if(entorno->num(estado->getF(),estado->getC())== 2){
         retorno->setFin(true);
     }
 
-    EstadoRecompensa * eR = new EstadoRecompensa(retorno , recompensa->num(estado->getF(), estado->getC()));
     delete e;
     delete estado;
-    return eR;
+    return retorno;
 }
 
 void Entorno::hacerMapa()

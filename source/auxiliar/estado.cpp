@@ -21,6 +21,16 @@ void Estado::setIndex(int value)
     index = value;
 }
 
-Estado::Estado(int i):index(i)
+float Estado::getRecompensa() const
+{
+    return recompensa;
+}
+
+void Estado::setRecompensa(float value)
+{
+    recompensa = value;
+}
+
+Estado::Estado(int i, float recompensa):index(i),recompensa(recompensa)
 {
 }
