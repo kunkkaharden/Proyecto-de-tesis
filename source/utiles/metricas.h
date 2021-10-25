@@ -8,7 +8,7 @@ using namespace std;
 class Metricas
 {
 private:
-    int umbral = -250;
+    int umbral = -300;
     int acumulador =0; //total derecompensas por episodio.
     int m = 10; // Cantidad de episodios a promediar para medir el humbral -> m ultimos episodios
     QList<Episodio> * historial;

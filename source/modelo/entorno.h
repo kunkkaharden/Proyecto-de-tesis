@@ -23,9 +23,6 @@ public:
     void  hacerMapa();
     Cordenadas * toCordenada(int);
     int toInt(Cordenadas * c);
-    void mostrar(int accion, Cordenadas *estado);
-    bool posible(int s);
-    void mostrar(int accion, int estado);
     Matrix *getEntorno() const;
     void setEntorno(Matrix *value);
     Matrix *getRecompensa() const;

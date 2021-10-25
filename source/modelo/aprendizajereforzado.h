@@ -14,6 +14,7 @@ public:
     AprendizajeReforzado(int dimension);
     void initMAAC();
     void initMA();
+    void initSEC();
     Matrix * crearQvalues();
     void entrenarMAAC(Algoritmo alg, int it);
     void entrenarMA(Algoritmo alg, int it);

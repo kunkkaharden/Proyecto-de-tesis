@@ -148,7 +148,7 @@ Agente *Agente::mezcla(Agente *a)
 
     int i =0;
     int j =0;
-#pragma omp parallel for private(j)
+
     for (i=0; i< a->getQValues()->filas(); i++){
         for (j=0; j< a->getQValues()->columnas(); j++){
             eTemp1 = this->getExperiencia()->num(i,j);
@@ -225,7 +225,7 @@ Agente::Agente(Agente *a)
 Agente::Agente(Matrix *q)
 {   m = new Metricas();
     this->qValues = q;
-    this->experiencia = new Matrix(1,q->filas(),q->columnas());
+    this->experiencia = NULL;
 }
 /**
  * Q-Learning Secuencial
@@ -619,13 +619,13 @@ bool Agente::entrenarMA(Algoritmo alg ,int rank, int it,  Entorno *entorno)
     }
     return entrenado;
 }
-void Agente::entrenarMAAC(Algoritmo alg ,int rank, int it, Matrix *qValues, Entorno *entorno)
+void Agente::entrenarMAAC(Algoritmo alg ,int rank, int it, Matrix *qValues, Entorno *entorno ,bool *en)
 {
 
     int s = 0; // estado inicial
     bool entrenado = false;
     int i =0;
-    while( i < it && !entrenado){
+    while( i < it && !entrenado && !(*en)){
 
         s = getEstadoInicial(rank,qValues);
 
@@ -633,6 +633,9 @@ void Agente::entrenarMAAC(Algoritmo alg ,int rank, int it, Matrix *qValues, Ento
             entrenado =   sarsaLearningMAAC(s,qValues,entorno);
         }else if(alg == Q_Learning){
             entrenado =   qLearningMAAC(s,qValues,entorno);
+        }
+        if(rank ==0){
+            *(en)= entrenado;
         }
         i++;
     }

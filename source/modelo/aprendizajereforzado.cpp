@@ -16,6 +16,13 @@ void AprendizajeReforzado::initMAAC()
 void AprendizajeReforzado::initMA()
 {
     this->agente = new Agente(crearQvalues());
+    agente->setExperiencia(new Matrix(1,agente->getQValues()->filas(),agente->getQValues()->columnas()));
+
+}
+
+void AprendizajeReforzado::initSEC()
+{
+     this->agente = new Agente(crearQvalues());
 }
 
 Matrix *AprendizajeReforzado::crearQvalues()
@@ -39,14 +46,14 @@ void AprendizajeReforzado::entrenarMA(Algoritmo alg,  int it){
     while( i<ciclos && !entrenado){
 #pragma omp parallel reduction(mezcla:agTemp) private(rank)
         {
-bool temp= false;
+            bool temp= false;
             rank = omp_get_thread_num();
             srand(rank + time(NULL));
-      temp=  agTemp->entrenarMA(alg,rank,iteraciones,entorno);
+            temp=  agTemp->entrenarMA(alg,rank,iteraciones,entorno);
 
-if(rank==0){
-     entrenado=temp;
-}
+            if(rank==0){
+                entrenado=temp;
+            }
         }
 
 
@@ -61,14 +68,14 @@ if(rank==0){
 void AprendizajeReforzado::entrenarMAAC(Algoritmo alg,  int it){
     initMAAC();
     int  rank=0;
-
+    bool entrenado = false;
 #pragma omp parallel private(rank)
     {
 
         rank = omp_get_thread_num();
         srand(rank + time(NULL));
         Agente * a = new Agente();
-        a->entrenarMAAC(alg,rank,it,qValues,entorno);
+        a->entrenarMAAC(alg,rank,it,qValues,entorno,&entrenado);
     }
 }
 /**
@@ -77,11 +84,13 @@ void AprendizajeReforzado::entrenarMAAC(Algoritmo alg,  int it){
 void AprendizajeReforzado::secuencial(Algoritmo alg, int it)
 {
 
-    initMA();
+
+    initSEC();
 
     srand(time(NULL));
 
     agente->entrenarSEC(alg,it,entorno);
+
 
 }
 
